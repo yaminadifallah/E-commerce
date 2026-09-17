@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------- Theme variables ---------------- */
+/* Dark theme is the default (no class needed). Adding .light to <html> switches palette. */
+:root {
+  --c-ink: 15 17 21;          /* #0F1115 */
+  --c-ink-soft: 23 26 33;     /* #171A21 */
+  --c-ink-softer: 31 35 44;   /* #1F232C */
+  --c-ink-line: 42 47 58;     /* #2A2F3A */
+  --c-mist: 237 239 244;      /* #EDEFF4 */
+  --c-mist-dim: 183 188 201;  /* #B7BCC9 */
+}
+
+html.light {
+  --c-ink: 247 248 250;       /* page background becomes near-white */
+  --c-ink-soft: 255 255 255;  /* cards become white */
+  --c-ink-softer: 241 242 246;
+  --c-ink-line: 224 226 232;
+  --c-mist: 20 22 28;         /* main text becomes near-black */
+  --c-mist-dim: 100 106 120;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html[dir='rtl'] {
+  direction: rtl;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--c-ink-line)) rgb(var(--c-ink));
+}
+
+::selection {
+  background: #6C5CE7;
+  color: white;
+}
+
+.container-shop {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-signal px-6 py-3 font-semibold text-white transition hover:bg-signal-light active:scale-95;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink-line bg-transparent px-6 py-3 font-semibold text-mist transition hover:border-signal hover:text-signal active:scale-95;
+}
+
+.card-surface {
+  @apply rounded-card border border-ink-line bg-ink-soft;
+}
+
+.input-field {
+  @apply w-full rounded-lg border border-ink-line bg-ink-softer px-4 py-2.5 text-mist placeholder:text-mist-dim focus:border-signal focus:outline-none focus:ring-1 focus:ring-signal;
+}

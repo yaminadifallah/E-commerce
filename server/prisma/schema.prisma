@@ -1,0 +1,280 @@
+// ============================================================
+// Prisma schema — Phone Accessories Shop
+// Database: MySQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  SELLER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// ------------------------------------------------------------
+// USER (Admin / Seller)
+// ------------------------------------------------------------
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(SELLER)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  activityLogs ActivityLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ------------------------------------------------------------
+// ACTIVITY LOG
+// Records every meaningful action taken by an admin/seller
+// account, so the store owner can see what each staff member did.
+// ------------------------------------------------------------
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  action     String   // e.g. "ORDER_STATUS_UPDATED", "PRODUCT_CREATED"
+  entityType String?  // e.g. "Order", "Product", "Category"
+  entityId   Int?
+  details    String?  @db.Text // short human-readable summary
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ------------------------------------------------------------
+// CATEGORY
+// ------------------------------------------------------------
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  image       String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+// ------------------------------------------------------------
+// COLOR
+// ------------------------------------------------------------
+
+model Color {
+  id        Int            @id @default(autoincrement())
+  name      String
+  hexCode   String
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  products  ProductColor[]
+
+  @@map("colors")
+}
+
+// ------------------------------------------------------------
+// PRODUCT
+// ------------------------------------------------------------
+
+model Product {
+  id             Int            @id @default(autoincrement())
+  name           String
+  slug           String         @unique
+  description    String?        @db.Text
+  price          Decimal        @db.Decimal(10, 2)
+  promotionPrice Decimal?       @db.Decimal(10, 2)
+  stock          Int            @default(0)
+  active         Boolean        @default(true)
+  featured       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  colors     ProductColor[]
+  images     ProductImage[]
+  orderItems OrderItem[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([active])
+  @@index([featured])
+  @@map("products")
+}
+
+// ------------------------------------------------------------
+// PRODUCT <-> COLOR (many-to-many with own PK, so we can add
+// per-color stock later without breaking the schema)
+// ------------------------------------------------------------
+
+model ProductColor {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  colorId   Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, colorId])
+  @@index([productId])
+  @@index([colorId])
+  @@map("product_colors")
+}
+
+// ------------------------------------------------------------
+// PRODUCT IMAGES
+// ------------------------------------------------------------
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  imageUrl  String
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ------------------------------------------------------------
+// WILAYA (delivery region)
+// ------------------------------------------------------------
+
+model Wilaya {
+  id             Int              @id @default(autoincrement())
+  code           String           @unique // e.g. "16" for Algiers
+  name           String
+  deliveryPrice  Decimal          @db.Decimal(10, 2)
+  estimatedDays  Int              @default(3)
+  active         Boolean          @default(true)
+  offices        DeliveryOffice[]
+  orders         Order[]
+
+  @@map("wilayas")
+}
+
+// ------------------------------------------------------------
+// DELIVERY OFFICE
+// ------------------------------------------------------------
+
+model DeliveryOffice {
+  id       Int     @id @default(autoincrement())
+  name     String
+  address  String
+  phone    String
+  wilayaId Int
+  active   Boolean @default(true)
+  wilaya   Wilaya  @relation(fields: [wilayaId], references: [id])
+  orders   Order[]
+
+  @@index([wilayaId])
+  @@map("delivery_offices")
+}
+
+// ------------------------------------------------------------
+// ORDER
+// ------------------------------------------------------------
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  orderNumber   String      @unique
+  customerName  String
+  customerPhone String
+  wilayaId      Int
+  deliveryOfficeId Int?
+  address       String      @db.Text
+  note          String?     @db.Text
+  subtotal      Decimal     @db.Decimal(10, 2)
+  deliveryPrice Decimal     @db.Decimal(10, 2)
+  total         Decimal     @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  wilaya         Wilaya          @relation(fields: [wilayaId], references: [id])
+  deliveryOffice DeliveryOffice? @relation(fields: [deliveryOfficeId], references: [id])
+  items          OrderItem[]
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([wilayaId])
+  @@map("orders")
+}
+
+// ------------------------------------------------------------
+// ORDER ITEM (snapshot pricing so history never changes)
+// ------------------------------------------------------------
+
+model OrderItem {
+  id                  Int     @id @default(autoincrement())
+  orderId             Int
+  productId           Int?
+  productNameSnapshot String
+  selectedColor       String?
+  quantity            Int
+  unitPrice           Decimal @db.Decimal(10, 2)
+  subtotal            Decimal @db.Decimal(10, 2)
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ------------------------------------------------------------
+// STORE SETTINGS (singleton row)
+// ------------------------------------------------------------
+
+model Settings {
+  id          Int    @id @default(1)
+  storeName   String @default("NABIL HMZ E-COMMERCE")
+  logo        String?
+  phone       String?
+  email       String?
+  address     String?
+  facebook    String?
+  instagram   String?
+  tiktok      String?
+  whatsapp    String?
+  description String? @db.Text
+
+  @@map("settings")
+}

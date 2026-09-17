@@ -1,0 +1,14 @@
+{
+  "name": "phone-accessories-shop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Full-stack e-commerce platform for a phone accessories store (React + Express + Prisma + MySQL)",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "migrate": "npm run migrate --prefix server",
+    "build:client": "npm run build --prefix client"
+  }
+}
