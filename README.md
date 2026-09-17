@@ -1,4 +1,4 @@
-# NABIL HMZ E-COMMERCE — Full-Stack E-Commerce Platform
+# E-COMMERCE — Full-Stack E-Commerce Platform
 
 A production-architected, multi-category e-commerce platform: customer storefront, cart & checkout with wilaya-based delivery, and a full staff/admin dashboard — built on **React + Vite**, **Express**, **Prisma**, and **MySQL**.
 
@@ -8,7 +8,8 @@ A production-architected, multi-category e-commerce platform: customer storefron
 
 This is a real, database-driven full-stack application — not a static demo. Every product, category, color, order, wilaya and delivery price comes from MySQL through Prisma. Nothing is hardcoded in the React code.
 
-NABIL HMZ E-COMMERCE is a general store, not just phone accessories. The seeded catalog spans **9 categories**: Phone Accessories, Baby Products (مستلزمات الأطفال), Gifts (Cadeaux), Kids' Toys (Jeux des enfants), Perfumes (Parfums), School Supplies (Les affaires scolaires), Women's Accessories, Makeup, and Electronics (الكترونيات).
+
+ E-COMMERCE is a general store, not just phone accessories. The seeded catalog spans **9 categories**: Phone Accessories, Baby Products (مستلزمات الأطفال), Gifts (Cadeaux), Kids' Toys (Jeux des enfants), Perfumes (Parfums), School Supplies (Les affaires scolaires), Women's Accessories, Makeup, and Electronics (الكترونيات).
 
 **Customer-facing features:** product catalog with search/filter/sort, product colors, promotions, cart (persisted in localStorage), checkout with wilaya-based delivery pricing fetched live from the database, order confirmation, delivery info page, contact page, **English / French / Arabic** language switching (with right-to-left layout for Arabic), and a **light/dark theme toggle**.
 
