@@ -21,6 +21,6 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: Number(process.env.PORT) || 4173,
-    allowedHosts: ['successful-fascination-production-ccad.up.railway.app'],
+    allowedHosts: true,
   },
 });
